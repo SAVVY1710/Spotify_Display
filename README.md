@@ -36,9 +36,9 @@ The firmware uses the ESP32's internal pull-up resistors, so no external resisto
 
 | Switch       | Function   | ESP32 Pin | Other Leg |
 |--------------|------------|-----------|-----------|
-| Switch 1     | Play/Pause | GPIO 0    | GND       |
-| Switch 2     | Skip       | GPIO 1    | GND       |
-| Switch 3     | Previous   | GPIO 3    | GND       |
+| Switch 1     | Play/Pause | GPIO 8    | GND       |
+| Switch 2     | Skip       | GPIO 9    | GND       |
+| Switch 3     | Previous   | GPIO 10   | GND       |
 
 ## Features
 
