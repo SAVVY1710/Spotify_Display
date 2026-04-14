@@ -8,51 +8,41 @@
 #include <HTTPClient.h>
 #include <JPEGDecoder.h>
 
-// -----------------------------------------------------------
-// PIN DEFINITIONS — change these to match your wiring
-// -----------------------------------------------------------
+// --- Pin Definitions ---
 #define TFT_CS    5
 #define TFT_RST   4
 #define TFT_DC    2
-#define TFT_SCLK  18
-#define TFT_MOSI  23
+#define TFT_MOSI  7
+#define TFT_SCLK  6
 
-// -----------------------------------------------------------
-// CREDENTIALS — paste yours here
-// -----------------------------------------------------------
+#define BTN_PLAYPAUSE 8
+#define BTN_SKIP      9
+#define BTN_PREVIOUS  10
+
+// --- Credentials ---
 char*       SSID          = "YOUR_WIFI_SSID";
 char*       PASSWORD      = "YOUR_WIFI_PASSWORD";
 const char* CLIENT_ID     = "YOUR_SPOTIFY_CLIENT_ID";
 const char* CLIENT_SECRET = "YOUR_SPOTIFY_CLIENT_SECRET";
 
-// -----------------------------------------------------------
-// OBJECTS
-// -----------------------------------------------------------
-Spotify        sp(CLIENT_ID, CLIENT_SECRET);
+// --- Objects ---
+Spotify         sp(CLIENT_ID, CLIENT_SECRET);
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_MOSI, TFT_SCLK, TFT_RST);
 
-// -----------------------------------------------------------
-// STATE — track last values to avoid unnecessary redraws
-// -----------------------------------------------------------
+// --- State ---
 String lastArtist   = "";
 String lastTrack    = "";
 String lastImageUrl = "";
 
-// -----------------------------------------------------------
-// LAYOUT CONSTANTS
-// Screen is 160x128 in landscape
-// Left 64px = album art, right 92px = text
-// -----------------------------------------------------------
+// --- Layout ---
 #define ART_X    0
 #define ART_Y    0
 #define ART_SIZE 64
 #define TEXT_X   68
-#define TEXT_W   (160 - TEXT_X)   // 92px
+#define TEXT_W   (160 - TEXT_X)
 
 // -----------------------------------------------------------
-// Fetch JPEG from a URL into a heap buffer
-// Returns pointer to buffer (caller must free), sets outSize
-// Returns nullptr on failure
+// Fetch JPEG from URL into heap buffer
 // -----------------------------------------------------------
 uint8_t* fetchJpeg(const String& url, int& outSize) {
     HTTPClient http;
@@ -102,8 +92,7 @@ uint8_t* fetchJpeg(const String& url, int& outSize) {
 }
 
 // -----------------------------------------------------------
-// Decode JPEG buffer and draw it on the TFT at (x, y),
-// scaled to ART_SIZE x ART_SIZE
+// Decode and draw JPEG on TFT scaled to ART_SIZE x ART_SIZE
 // -----------------------------------------------------------
 void drawJpeg(uint8_t* data, int size, int x, int y) {
     if (!JpegDec.decodeArray(data, size)) {
@@ -129,7 +118,7 @@ void drawJpeg(uint8_t* data, int size, int x, int y) {
 
                 if (dstX < x + ART_SIZE && dstY < y + ART_SIZE) {
                     uint16_t color = pImg[row * JpegDec.MCUWidth + col];
-                    color = (color >> 8) | (color << 8); // fix byte order
+                    color = (color >> 8) | (color << 8);
                     tft.drawPixel(dstX, dstY, color);
                 }
             }
@@ -138,14 +127,12 @@ void drawJpeg(uint8_t* data, int size, int x, int y) {
 }
 
 // -----------------------------------------------------------
-// Fetch and render album art from Spotify URL
+// Fetch and render album art
 // -----------------------------------------------------------
 void updateAlbumArt(const String& url) {
     if (url.isEmpty() || url == "Something went wrong") return;
 
     Serial.println("Fetching album art...");
-    Serial.println(url);
-
     int jpegSize = 0;
     uint8_t* jpegData = fetchJpeg(url, jpegSize);
 
@@ -160,7 +147,7 @@ void updateAlbumArt(const String& url) {
 }
 
 // -----------------------------------------------------------
-// Clear a text region and print new text in it
+// Clear a region and print text
 // -----------------------------------------------------------
 void drawText(int x, int y, int w, int h,
               const String& text, uint8_t size, uint16_t color) {
@@ -178,9 +165,14 @@ void drawText(int x, int y, int w, int h,
 void setup() {
     Serial.begin(115200);
 
-    // Init screen
+    // Button pins
+    pinMode(BTN_PLAYPAUSE, INPUT_PULLUP);
+    pinMode(BTN_SKIP,      INPUT_PULLUP);
+    pinMode(BTN_PREVIOUS,  INPUT_PULLUP);
+
+    // Init TFT
     tft.initR(INITR_BLACKTAB);
-    tft.setRotation(1);             // landscape: 160 wide, 128 tall
+    tft.setRotation(1);
     tft.fillScreen(ST77XX_BLACK);
     tft.setTextColor(ST77XX_WHITE);
     tft.setTextSize(1);
@@ -196,19 +188,19 @@ void setup() {
     }
     Serial.println("\nWiFi connected!");
 
-    // Show IP address — COPY THIS to set your Spotify redirect URI
+    // Show IP — copy this into your Spotify redirect URI
     String ip = WiFi.localIP().toString();
     Serial.println("IP: " + ip);
     tft.fillScreen(ST77XX_BLACK);
     tft.setCursor(0, 0);
-    tft.write("WiFi connected!\nIP:");
+    tft.write("WiFi connected!\nIP:\n");
     tft.write(ip.c_str());
     delay(3000);
 
-    // Authenticate with Spotify
+    // Authenticate Spotify
     tft.fillScreen(ST77XX_BLACK);
     tft.setCursor(0, 0);
-    tft.write("Open browser and\ngo to:\n");
+    tft.write("Open browser:\n");
     tft.write(ip.c_str());
     tft.write("/callback\n\nto authenticate\nSpotify");
 
@@ -225,37 +217,37 @@ void setup() {
     tft.fillScreen(ST77XX_BLACK);
 }
 
-// -----------------------------------------------------------
-// LOOP
-//
-// Screen layout (160x128 landscape):
-//
-//  +--------+---------------------------+
-//  |        | Artist (green, size 1)    |
-//  | 64x64  |                           |
-//  |  art   | Track  (white, size 1)    |
-//  |        |                           |
-//  +--------+---------------------------+
-// -----------------------------------------------------------
 void loop() {
+    if (digitalRead(BTN_PLAYPAUSE) == LOW) {
+    sp.start_a_users_playback();
+    delay(300);
+    }
+    if (digitalRead(BTN_SKIP) == LOW) {
+    sp.skip_to_next();
+    delay(300);
+    }
+    if (digitalRead(BTN_PREVIOUS) == LOW) {
+    sp.skip_to_previous();
+    delay(300);
+    }
+
+    // --- Spotify polling ---
     String currentArtist = sp.current_artist_names();
     String currentTrack  = sp.current_track_name();
-    String currentUrl    = sp.get_current_album_image_url(2); // index 2 = small ~64px
+    String currentUrl    = sp.get_current_album_image_url(2);
 
-    bool trackChanged  = (currentTrack  != lastTrack  &&
-                          currentTrack  != "Something went wrong" &&
-                          currentTrack  != "null" &&
-                          !currentTrack.isEmpty());
+    bool trackChanged = (currentTrack  != lastTrack  &&
+                         currentTrack  != "Something went wrong" &&
+                         currentTrack  != "null" &&
+                         !currentTrack.isEmpty());
 
     bool artistChanged = (currentArtist != lastArtist &&
                           currentArtist != "Something went wrong" &&
                           !currentArtist.isEmpty());
 
-    // New track — update art, artist, and track name
     if (trackChanged) {
         lastTrack = currentTrack;
 
-        // Update album art only if the image URL changed too
         if (currentUrl != lastImageUrl && !currentUrl.isEmpty()) {
             lastImageUrl = currentUrl;
             updateAlbumArt(currentUrl);
@@ -271,5 +263,5 @@ void loop() {
         drawText(TEXT_X, 4, TEXT_W, 28, lastArtist, 1, ST77XX_GREEN);
     }
 
-    delay(2000); // poll every 2 seconds — respects Spotify rate limit
+    delay(2000);
 }
