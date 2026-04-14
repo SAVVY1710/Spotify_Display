@@ -9,9 +9,12 @@ I wanted a physical, always-on display sitting on my desk that shows what I'm li
 ## 3D Model
 <img width="674" height="538" alt="image" src="https://github.com/user-attachments/assets/c9ea7e5f-e3bf-49cc-9a1e-b0e4ccc261aa" />
 
+<img width="718" height="499" alt="image" src="https://github.com/user-attachments/assets/9be779b4-c3a9-4cf7-871d-b8119ea59dd0" />
+
 This is an image of my CAD for the project and as you can see, it has specific places where I can insert the keys, the esp32 and the screen. It's effieicient because you will see none of the wires and will be left with a clean looking display.
 
 ## Wiring Diagram
+<img width="910" height="611" alt="image" src="https://github.com/user-attachments/assets/c915eeb1-df1e-4366-ae59-d9f3b7113b5f" />
 
 ### TFT Display
 
@@ -19,11 +22,12 @@ This is an image of my CAD for the project and as you can see, it has specific p
 |---------|-----------|
 | CS      | GPIO 5    |
 | RST     | GPIO 4    |
-| DC      | GPIO 2    |
-| SCLK    | GPIO 18   |
-| MOSI    | GPIO 23   |
+| A0      | GPIO 2    |
+| SCK     | GPIO 6    |
+| SDA     | GPIO 7    |
 | VCC     | 3.3V      |
 | GND     | GND       |
+| LED     | 3.3V      |
 
 ### Keyboard Switches
 
@@ -32,9 +36,9 @@ The firmware uses the ESP32's internal pull-up resistors, so no external resisto
 
 | Switch       | Function   | ESP32 Pin | Other Leg |
 |--------------|------------|-----------|-----------|
-| Switch 1     | Play/Pause | GPIO 6    | GND       |
-| Switch 2     | Skip       | GPIO 7    | GND       |
-| Switch 3     | Previous   | GPIO 8    | GND       |
+| Switch 1     | Play/Pause | GPIO 0    | GND       |
+| Switch 2     | Skip       | GPIO 1    | GND       |
+| Switch 3     | Previous   | GPIO 3    | GND       |
 
 ## Features
 
