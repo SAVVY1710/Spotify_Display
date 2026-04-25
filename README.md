@@ -9,8 +9,6 @@ I wanted a physical, always-on display sitting on my desk that shows what I'm li
 to without having to look at my phone or computer.
 
 ## 3D Model
-<img width="636" height="362" alt="image" src="https://github.com/user-attachments/assets/dd8d3c20-3d83-49be-8bf8-704a59d612ca" />
-
 
 <img width="331" height="295" alt="image" src="https://github.com/user-attachments/assets/ee5327a1-cf28-4acf-a30d-6e1cbeeb2066" />
 
